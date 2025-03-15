@@ -13,6 +13,9 @@ importers:
       "@next/env":
         specifier: ^15.2.2
         version: 15.2.2
+      "@radix-ui/react-label":
+        specifier: ^2.1.2
+        version: 2.1.2(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       "@radix-ui/react-slot":
         specifier: ^1.1.2
         version: 1.1.2(@types/react@19.0.10)(react@19.0.0)
@@ -49,6 +52,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@4.0.13)
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
     devDependencies:
       "@eslint/eslintrc":
         specifier: ^3.3.0
@@ -6357,6 +6363,12 @@ packages:
         integrity: sha512-JED8pB50qbA4FOkDol0bYF/p60qSEDQqBD0/qeIrUCG1KbPBIQ776fCUNb9ldbPcSTxA69g/47XTo4TqWiuXOA==,
       }
 
+  zod@3.24.2:
+    resolution:
+      {
+        integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==,
+      }
+
 snapshots:
   "@alloc/quick-lru@5.2.0": {}
 
@@ -10405,3 +10417,5 @@ snapshots:
       tiny-case: 1.0.3
       toposort: 2.0.2
       type-fest: 2.19.0
+
+  zod@3.24.2: {}
