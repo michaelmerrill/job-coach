@@ -65,6 +65,6 @@ export async function updateUserMetadata(prevState: State, formData: FormData) {
     };
   }
 
-  revalidatePath("/dashboard");
-  redirect("/dashboard");
+  revalidatePath("/chat");
+  redirect("/chat");
 }
