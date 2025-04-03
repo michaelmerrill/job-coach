@@ -1,14 +1,8 @@
 import { stackServerApp } from "@/lib/stack";
-import { NextRequest } from "next/server";
-import { openai } from "@ai-sdk/openai";
-import { appendResponseMessages, streamText, UIMessage } from "ai";
-import {
-  generateUUID,
-  getMostRecentUserMessage,
-  getTrailingMessageId,
-} from "@/lib/utils";
-import { getChatById, saveChat, saveMessages } from "@/db/queries";
-import { prompt } from "@/lib/ai/prompt";
+import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const maxDuration = 60;
 
@@ -20,87 +14,19 @@ export async function POST(request: NextRequest) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const { id, messages }: { id: string; messages: UIMessage[] } =
-      await request.json();
+    const { previousResponseId, messages } = await request.json();
 
-    const userMessage = getMostRecentUserMessage(messages);
-
-    if (!userMessage) {
-      return new Response("No user message found", { status: 400 });
-    }
-
-    const chat = await getChatById({ id });
-
-    if (!chat) {
-      await saveChat({ id, userId: user.id });
-    } else {
-      if (chat.userId !== user.id) {
-        return new Response("Unauthorized", { status: 401 });
-      }
-    }
-
-    // save user message
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: userMessage.id,
-          role: "user",
-          parts: userMessage.parts,
-        },
-      ],
+    const response = await openai.responses.create({
+      model: "gpt-4o-mini",
+      input: messages,
+      previous_response_id: previousResponseId,
     });
 
-    const {
-      firstName,
-      lastName,
-    }: {
-      firstName: string;
-      lastName: string;
-    } = user.clientMetadata;
-
-    const result = streamText({
-      model: openai.responses("gpt-4o-mini"),
-      messages,
-      system: prompt({ firstName, lastName }),
-      experimental_generateMessageId: generateUUID,
-      async onFinish({ response }) {
-        try {
-          const assistantId = getTrailingMessageId({
-            messages: response.messages.filter((m) => m.role === "assistant"),
-          });
-
-          if (!assistantId) {
-            throw new Error("No assistant message found!");
-          }
-
-          const [, assistantMessage] = appendResponseMessages({
-            messages: [userMessage],
-            responseMessages: response.messages,
-          });
-
-          // save assistant message
-          await saveMessages({
-            messages: [
-              {
-                chatId: id,
-                id: assistantId,
-                role: assistantMessage.role,
-                parts: assistantMessage.parts,
-              },
-            ],
-          });
-        } catch (error) {
-          console.error("Failed to save assistant message", error);
-        }
-      },
-    });
-
-    result.consumeStream();
-
-    return result.toDataStreamResponse();
-  } catch (error) {
-    console.error(error);
-    return new Response("Internal server error", { status: 500 });
+    return NextResponse.json(response);
+  } catch (error: Error | unknown) {
+    console.error("Error in /chat/completions:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "An unexpected error occurred";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

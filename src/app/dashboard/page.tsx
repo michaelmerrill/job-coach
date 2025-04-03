@@ -1,19 +1,19 @@
 "use server";
 
 import { stackServerApp } from "@/lib/stack";
-import { redirect } from "next/navigation";
+import ChatInterface from "@/components/chat-interface";
 
 export default async function Dashboard() {
-  const user = await stackServerApp.getUser({ or: "redirect" });
-
-  if (!user.clientReadOnlyMetadata?.onboarded) {
-    redirect("/dashboard/onboarding");
-  }
+  await stackServerApp.getUser({ or: "redirect" });
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome, {user?.primaryEmail}</p>
-    </div>
+    <main className="grid min-h-screen place-items-center p-4 bg-gray-50">
+      <div className="w-full max-w-3xl">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          Sylvia
+        </h1>
+        <ChatInterface />
+      </div>
+    </main>
   );
 }
